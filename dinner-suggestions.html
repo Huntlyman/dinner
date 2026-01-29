@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dinner Suggestions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .suggestion-box {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 300px;
+            border-left: 5px solid #667eea;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .meal-name {
+            color: #667eea;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .meal-description {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .protein-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Dinner Ideas</h1>
+        <p class="subtitle">Light & healthy meals featuring chicken, beef, salmon, pork, shrimp & more</p>
+        
+        <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 2px solid #667eea;">
+            <label style="display: block; color: #667eea; font-weight: bold; margin-bottom: 10px; font-size: 1.1em;">
+                Search Recipes:
+            </label>
+            <div style="display: flex; gap: 10px;">
+                <input 
+                    type="text" 
+                    id="searchBox" 
+                    placeholder="Try: salmon, shrimp, quinoa, grilled, garlic..." 
+                    style="flex: 1; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px;"
+                    onkeypress="if(event.key === 'Enter') searchRecipes()"
+                />
+                <button 
+                    onclick="searchRecipes()" 
+                    style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+                    Search
+                </button>
+                <button 
+                    onclick="clearSearch()" 
+                    style="padding: 12px 24px; background: #6b7280; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+                    Clear
+                </button>
+            </div>
+            <div id="searchResults" style="margin-top: 10px; color: #667eea; font-weight: bold;"></div>
+        </div>
+        
+        <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 2px solid #667eea;">
+            <label style="display: block; color: #667eea; font-weight: bold; margin-bottom: 10px; font-size: 1.1em;">
+                Number of Servings:
+            </label>
+            <select id="servings" style="width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer;">
+                <option value="1">1 person</option>
+                <option value="2" selected>2 people</option>
+                <option value="3">3 people</option>
+                <option value="4">4 people</option>
+                <option value="5">5 people</option>
+                <option value="6">6 people</option>
+            </select>
+        </div>
+        
+        <div class="suggestion-box" id="suggestionBox">
+            <div class="meal-name">Click below to get a complete recipe!</div>
+            <div class="meal-description">Each suggestion includes ingredients and step-by-step cooking instructions featuring chicken, beef, salmon, pork, shrimp, protein pasta, and vegetables - with plenty of rice and quinoa options.</div>
+        </div>
+        
+        <button class="button" onclick="getSuggestion()">Get Recipe</button>
+        
+        <button id="updateButton" class="button" onclick="updateServings()" style="display: none; margin-top: 15px; background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+            Update Serving Size
+        </button>
+    </div>
+
+    <script>
+        const meals = [
+            {
+                name: "Grilled Lemon Herb Chicken",
+                protein: "Chicken",
+                description: "Juicy chicken breast marinated in lemon juice, garlic, and fresh herbs. Served with roasted Brussels sprouts and sweet potato wedges. Light, flavorful, and satisfying.",
+                ingredients: [
+                    "2 chicken breasts",
+                    "2 lemons (juice and zest)",
+                    "3 cloves garlic, minced",
+                    "2 tbsp fresh rosemary, chopped",
+                    "2 tbsp fresh thyme",
+                    "2 tbsp olive oil",
+                    "1 lb Brussels sprouts, halved",
+                    "2 sweet potatoes, cut into wedges",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Mix lemon juice, zest, garlic, herbs, and 1 tbsp olive oil in a bowl.",
+                    "Add chicken breasts and marinate for 30 minutes (or up to 4 hours).",
+                    "Preheat oven to 425°F. Toss Brussels sprouts and sweet potato wedges with remaining olive oil, salt, and pepper.",
+                    "Spread vegetables on a baking sheet and roast for 25-30 minutes.",
+                    "Heat grill or grill pan to medium-high. Grill chicken 6-7 minutes per side until internal temperature reaches 165°F.",
+                    "Let chicken rest 5 minutes, then slice and serve with roasted vegetables."
+                ]
+            },
+            {
+                name: "Teriyaki Salmon Bowl",
+                protein: "Salmon",
+                description: "Pan-seared salmon with a light teriyaki glaze over brown rice. Topped with steamed broccoli, edamame, and sesame seeds. Healthy fats and plenty of vegetables.",
+                ingredients: [
+                    "2 salmon fillets (6 oz each)",
+                    "1 cup brown rice",
+                    "2 cups broccoli florets",
+                    "1 cup shelled edamame",
+                    "3 tbsp low-sodium soy sauce",
+                    "2 tbsp honey",
+                    "1 tbsp rice vinegar",
+                    "1 tsp grated ginger",
+                    "1 clove garlic, minced",
+                    "1 tbsp sesame seeds",
+                    "Green onions for garnish"
+                ],
+                steps: [
+                    "Cook brown rice according to package directions.",
+                    "Mix soy sauce, honey, rice vinegar, ginger, and garlic in a small bowl.",
+                    "Heat a non-stick pan over medium-high. Season salmon with salt and pepper, then sear skin-side down for 4-5 minutes.",
+                    "Flip salmon, brush with half the teriyaki sauce, and cook 3-4 minutes more.",
+                    "Steam broccoli and edamame for 4-5 minutes until tender.",
+                    "Divide rice between bowls, top with salmon, vegetables, remaining sauce, sesame seeds, and green onions."
+                ]
+            },
+            {
+                name: "Beef Stir-Fry",
+                protein: "Beef",
+                description: "Lean beef strips with snap peas, bell peppers, and broccoli in a light ginger-garlic sauce. Serve over cauliflower rice or regular rice for a quick, veggie-packed meal.",
+                ingredients: [
+                    "1 lb lean beef sirloin, thinly sliced",
+                    "2 cups snap peas",
+                    "1 red bell pepper, sliced",
+                    "1 yellow bell pepper, sliced",
+                    "2 cups broccoli florets",
+                    "3 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "3 tbsp low-sodium soy sauce",
+                    "1 tbsp sesame oil",
+                    "2 cups cauliflower rice or cooked rice"
+                ],
+                steps: [
+                    "Heat 1 tsp sesame oil in a large wok or skillet over high heat.",
+                    "Add beef in batches, cooking 2-3 minutes until browned. Remove and set aside.",
+                    "Add remaining sesame oil, garlic, and ginger. Stir-fry for 30 seconds until fragrant.",
+                    "Add all vegetables and stir-fry for 4-5 minutes until crisp-tender.",
+                    "Return beef to pan, add soy sauce, and toss everything together for 1-2 minutes.",
+                    "Serve immediately over cauliflower rice or regular rice."
+                ]
+            },
+            {
+                name: "Mediterranean Chicken Skewers",
+                protein: "Chicken",
+                description: "Chicken cubes marinated in olive oil, lemon, and oregano, grilled to perfection. Served with a Greek salad and quinoa.",
+                ingredients: [
+                    "1.5 lbs chicken breast, cut into cubes",
+                    "3 tbsp olive oil",
+                    "Juice of 1 lemon",
+                    "2 tsp dried oregano",
+                    "3 cloves garlic, minced",
+                    "1 cup quinoa",
+                    "2 cups cherry tomatoes, halved",
+                    "1 cucumber, diced",
+                    "1/2 red onion, thinly sliced",
+                    "1/2 cup Kalamata olives",
+                    "1/4 cup feta cheese, crumbled"
+                ],
+                steps: [
+                    "Mix olive oil, lemon juice, oregano, and garlic. Add chicken and marinate 1-2 hours.",
+                    "Cook quinoa according to package directions.",
+                    "Thread chicken onto skewers. Grill over medium-high heat for 10-12 minutes, turning occasionally.",
+                    "Mix tomatoes, cucumber, onion, and olives for the salad. Dress with olive oil and lemon juice.",
+                    "Top salad with feta cheese.",
+                    "Serve chicken skewers with quinoa and Greek salad."
+                ]
+            },
+            {
+                name: "Protein Pasta Primavera",
+                protein: "Protein Pasta",
+                description: "High-protein pasta tossed with cherry tomatoes, zucchini, asparagus, and garlic in olive oil and white wine. Topped with fresh basil and a sprinkle of Parmesan.",
+                ingredients: [
+                    "12 oz protein pasta (chickpea or lentil)",
+                    "2 cups cherry tomatoes, halved",
+                    "1 zucchini, sliced into half-moons",
+                    "1 bunch asparagus, cut into 2-inch pieces",
+                    "4 cloves garlic, thinly sliced",
+                    "1/4 cup dry white wine",
+                    "3 tbsp olive oil",
+                    "Fresh basil leaves",
+                    "2 tbsp grated Parmesan",
+                    "Red pepper flakes (optional)"
+                ],
+                steps: [
+                    "Cook pasta according to package directions. Reserve 1 cup pasta water before draining.",
+                    "Heat olive oil in a large skillet over medium heat. Add garlic and cook 1 minute.",
+                    "Add asparagus and zucchini, sauté for 4-5 minutes.",
+                    "Add cherry tomatoes and white wine. Cook 3-4 minutes until tomatoes soften.",
+                    "Add cooked pasta to the skillet with 1/4 cup pasta water. Toss to combine.",
+                    "Season with salt, pepper, and red pepper flakes. Top with fresh basil and Parmesan."
+                ]
+            },
+            {
+                name: "Blackened Salmon Tacos",
+                protein: "Salmon",
+                description: "Spice-crusted salmon in soft corn tortillas with cabbage slaw, avocado, and lime. A fresh take on taco night with omega-3s and crunch.",
+                ingredients: [
+                    "1 lb salmon fillet",
+                    "1 tbsp paprika",
+                    "1 tsp garlic powder",
+                    "1 tsp cumin",
+                    "1/2 tsp cayenne pepper",
+                    "8 small corn tortillas",
+                    "2 cups shredded cabbage",
+                    "1 avocado, sliced",
+                    "1/4 cup Greek yogurt",
+                    "2 limes",
+                    "Cilantro for garnish"
+                ],
+                steps: [
+                    "Mix paprika, garlic powder, cumin, cayenne, salt, and pepper.",
+                    "Pat salmon dry and rub with spice mixture.",
+                    "Heat a non-stick pan over medium-high. Cook salmon skin-side down for 5 minutes, then flip and cook 3-4 minutes more.",
+                    "Remove skin and flake salmon into chunks.",
+                    "Mix cabbage with juice of 1 lime and a pinch of salt.",
+                    "Warm tortillas. Fill with cabbage slaw, salmon, avocado slices, a dollop of Greek yogurt, cilantro, and lime wedges."
+                ]
+            },
+            {
+                name: "Garlic Herb Beef Tenderloin",
+                protein: "Beef",
+                description: "Pan-seared beef tenderloin with roasted garlic and fresh rosemary. Paired with roasted rainbow carrots and sautéed spinach. Simple and elegant.",
+                ingredients: [
+                    "2 beef tenderloin steaks (6 oz each)",
+                    "6 cloves garlic, minced",
+                    "2 tbsp fresh rosemary, chopped",
+                    "2 tbsp olive oil",
+                    "1 lb rainbow carrots",
+                    "4 cups fresh spinach",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Preheat oven to 425°F. Toss carrots with 1 tbsp olive oil, salt, and pepper. Roast for 25-30 minutes.",
+                    "Mix garlic and rosemary with salt and pepper. Rub onto both sides of steaks.",
+                    "Heat remaining olive oil in an oven-safe skillet over high heat.",
+                    "Sear steaks 2-3 minutes per side, then transfer skillet to oven for 5-7 minutes for medium-rare.",
+                    "Remove steaks and let rest 5 minutes.",
+                    "In the same pan, quickly sauté spinach until wilted, about 2 minutes.",
+                    "Serve steaks with roasted carrots and spinach."
+                ]
+            },
+            {
+                name: "Chicken and Vegetable Sheet Pan",
+                protein: "Chicken",
+                description: "Chicken thighs with bell peppers, red onions, and zucchini, all roasted together with olive oil and Italian seasoning. Easy cleanup, maximum flavor.",
+                ingredients: [
+                    "6 chicken thighs (bone-in, skin removed)",
+                    "2 bell peppers (any color), cut into chunks",
+                    "1 red onion, cut into wedges",
+                    "2 zucchini, sliced into rounds",
+                    "3 tbsp olive oil",
+                    "2 tsp Italian seasoning",
+                    "1 tsp garlic powder",
+                    "Salt and pepper to taste",
+                    "Fresh parsley for garnish"
+                ],
+                steps: [
+                    "Preheat oven to 425°F. Line a large sheet pan with parchment paper.",
+                    "Toss vegetables with 2 tbsp olive oil, salt, and pepper. Spread on half the sheet pan.",
+                    "Rub chicken thighs with remaining olive oil, Italian seasoning, garlic powder, salt, and pepper.",
+                    "Place chicken on the other half of the sheet pan.",
+                    "Roast for 35-40 minutes until chicken reaches 165°F and vegetables are tender.",
+                    "Garnish with fresh parsley and serve."
+                ]
+            },
+            {
+                name: "Asian Salmon with Bok Choy",
+                protein: "Salmon",
+                description: "Baked salmon with ginger and low-sodium soy sauce, served with steamed bok choy and shiitake mushrooms. Light and aromatic.",
+                ingredients: [
+                    "2 salmon fillets (6 oz each)",
+                    "2 tbsp low-sodium soy sauce",
+                    "1 tbsp rice vinegar",
+                    "1 tbsp grated ginger",
+                    "2 cloves garlic, minced",
+                    "4 heads baby bok choy, halved",
+                    "1 cup shiitake mushrooms, sliced",
+                    "1 tbsp sesame oil",
+                    "Sesame seeds for garnish"
+                ],
+                steps: [
+                    "Preheat oven to 400°F.",
+                    "Mix soy sauce, rice vinegar, ginger, and garlic.",
+                    "Place salmon in a baking dish and pour half the sauce over it. Bake for 12-15 minutes.",
+                    "Heat sesame oil in a large pan or wok. Add mushrooms and stir-fry for 3 minutes.",
+                    "Add bok choy and remaining sauce. Cover and steam for 3-4 minutes until bok choy is tender.",
+                    "Serve salmon over vegetables, garnished with sesame seeds."
+                ]
+            },
+            {
+                name: "Beef and Broccoli",
+                protein: "Beef",
+                description: "Classic Chinese-style dish with tender beef and fresh broccoli in a light sauce made with garlic, ginger, and low-sodium soy.",
+                ingredients: [
+                    "1 lb flank steak, thinly sliced",
+                    "4 cups broccoli florets",
+                    "4 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "1/4 cup low-sodium soy sauce",
+                    "2 tbsp oyster sauce",
+                    "1 tbsp sesame oil",
+                    "1/4 cup water",
+                    "Cooked rice for serving"
+                ],
+                steps: [
+                    "Heat 1 tsp sesame oil in a wok or large skillet over high heat.",
+                    "Add beef in batches, cooking 2-3 minutes until browned. Remove and set aside.",
+                    "Add remaining sesame oil, garlic, and ginger. Cook 30 seconds.",
+                    "Add broccoli and water. Cover and steam for 3-4 minutes.",
+                    "Return beef to the pan. Add soy sauce and oyster sauce. Toss for 1-2 minutes.",
+                    "Serve over rice."
+                ]
+            },
+            {
+                name: "Pesto Chicken with Roasted Vegetables",
+                protein: "Chicken",
+                description: "Grilled chicken with homemade basil pesto (light on oil) served alongside roasted cherry tomatoes, asparagus, and red peppers. Fresh and colorful.",
+                ingredients: [
+                    "2 chicken breasts",
+                    "2 cups fresh basil",
+                    "1/4 cup pine nuts or walnuts",
+                    "2 cloves garlic",
+                    "1/4 cup Parmesan cheese",
+                    "3 tbsp olive oil",
+                    "2 cups cherry tomatoes",
+                    "1 bunch asparagus",
+                    "1 red bell pepper, sliced"
+                ],
+                steps: [
+                    "Preheat oven to 425°F.",
+                    "Blend basil, nuts, garlic, Parmesan, and olive oil until smooth to make pesto.",
+                    "Toss tomatoes, asparagus, and bell pepper with 1 tbsp pesto, salt, and pepper. Roast for 20 minutes.",
+                    "Brush chicken with pesto. Grill or pan-sear 6-7 minutes per side until cooked through.",
+                    "Let chicken rest, then slice.",
+                    "Serve chicken over roasted vegetables with extra pesto drizzled on top."
+                ]
+            },
+            {
+                name: "Protein Pasta Bolognese",
+                protein: "Protein Pasta",
+                description: "High-protein pasta with a lean ground beef and turkey tomato sauce loaded with carrots, celery, and onions. Rich in protein without the cream.",
+                ingredients: [
+                    "12 oz protein pasta",
+                    "1/2 lb lean ground beef",
+                    "1/2 lb ground turkey",
+                    "1 onion, diced",
+                    "2 carrots, diced",
+                    "2 celery stalks, diced",
+                    "4 cloves garlic, minced",
+                    "28 oz can crushed tomatoes",
+                    "2 tbsp tomato paste",
+                    "1 tsp dried oregano",
+                    "1 tsp dried basil",
+                    "Fresh basil for garnish"
+                ],
+                steps: [
+                    "Cook pasta according to package directions.",
+                    "In a large pot, brown beef and turkey over medium-high heat. Drain any excess fat.",
+                    "Add onion, carrots, and celery. Cook 5-7 minutes until softened.",
+                    "Add garlic and cook 1 minute.",
+                    "Stir in crushed tomatoes, tomato paste, oregano, basil, salt, and pepper.",
+                    "Simmer for 20-30 minutes, stirring occasionally.",
+                    "Serve sauce over pasta, garnished with fresh basil."
+                ]
+            },
+            {
+                name: "Honey Mustard Salmon",
+                protein: "Salmon",
+                description: "Salmon fillet baked with a tangy honey mustard glaze. Served with green beans and roasted fingerling potatoes. Sweet, savory, and simple.",
+                ingredients: [
+                    "2 salmon fillets (6 oz each)",
+                    "2 tbsp Dijon mustard",
+                    "2 tbsp honey",
+                    "1 tbsp lemon juice",
+                    "3 cups green beans, trimmed",
+                    "1 lb fingerling potatoes, halved",
+                    "2 tbsp olive oil",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Preheat oven to 400°F.",
+                    "Mix mustard, honey, and lemon juice.",
+                    "Toss potatoes with 1 tbsp olive oil, salt, and pepper. Roast for 20 minutes.",
+                    "Add green beans tossed with remaining olive oil to the pan with potatoes. Roast 10 more minutes.",
+                    "Place salmon on a lined baking sheet. Brush with honey mustard glaze.",
+                    "Bake salmon for 12-15 minutes until cooked through.",
+                    "Serve salmon with roasted vegetables."
+                ]
+            },
+            {
+                name: "Fajita Beef Bowl",
+                protein: "Beef",
+                description: "Seasoned beef strips with sautéed peppers and onions over cilantro-lime rice. Top with fresh salsa, guacamole, and a squeeze of lime.",
+                ingredients: [
+                    "1 lb flank steak, sliced into strips",
+                    "2 bell peppers, sliced",
+                    "1 onion, sliced",
+                    "2 tsp chili powder",
+                    "1 tsp cumin",
+                    "1 tsp paprika",
+                    "1 cup rice",
+                    "Juice of 1 lime",
+                    "1/4 cup cilantro, chopped",
+                    "1 avocado",
+                    "Salsa for serving"
+                ],
+                steps: [
+                    "Cook rice according to package directions. Stir in lime juice and cilantro.",
+                    "Mix chili powder, cumin, paprika, salt, and pepper. Rub onto beef strips.",
+                    "Heat a large skillet over high heat. Cook beef 3-4 minutes until browned. Remove and set aside.",
+                    "In the same pan, sauté peppers and onions for 5-6 minutes until softened.",
+                    "Return beef to pan and toss together.",
+                    "Serve beef and vegetables over cilantro-lime rice. Top with mashed avocado and salsa."
+                ]
+            },
+            {
+                name: "Lemon Pepper Chicken",
+                protein: "Chicken",
+                description: "Pan-seared chicken with fresh lemon juice and cracked black pepper. Served with steamed green beans and wild rice pilaf.",
+                ingredients: [
+                    "2 chicken breasts",
+                    "Juice of 2 lemons",
+                    "2 tsp cracked black pepper",
+                    "3 cups green beans",
+                    "1 cup wild rice blend",
+                    "2 tbsp olive oil",
+                    "Fresh parsley for garnish"
+                ],
+                steps: [
+                    "Cook wild rice according to package directions.",
+                    "Season chicken with salt and cracked black pepper.",
+                    "Heat olive oil in a skillet over medium-high. Cook chicken 6-7 minutes per side.",
+                    "Add lemon juice to the pan and spoon over chicken. Cook 1 more minute.",
+                    "Steam green beans for 5-6 minutes until tender-crisp.",
+                    "Serve chicken with green beans and wild rice, garnished with parsley."
+                ]
+            },
+            {
+                name: "Protein Pasta with Marinara and Turkey Meatballs",
+                protein: "Protein Pasta",
+                description: "High-protein pasta topped with homemade turkey meatballs in a fresh marinara sauce. Add a side salad for extra vegetables.",
+                ingredients: [
+                    "12 oz protein pasta",
+                    "1 lb ground turkey",
+                    "1/4 cup breadcrumbs",
+                    "1 egg",
+                    "2 cloves garlic, minced",
+                    "1/4 cup Parmesan cheese",
+                    "24 oz marinara sauce",
+                    "Fresh basil",
+                    "Mixed greens for salad"
+                ],
+                steps: [
+                    "Mix turkey, breadcrumbs, egg, garlic, Parmesan, salt, and pepper. Form into 12 meatballs.",
+                    "Bake meatballs at 400°F for 20 minutes.",
+                    "Cook pasta according to package directions.",
+                    "Heat marinara sauce in a large pot. Add cooked meatballs and simmer 10 minutes.",
+                    "Toss pasta with sauce and meatballs.",
+                    "Serve with a simple side salad of mixed greens, topped with fresh basil."
+                ]
+            },
+            {
+                name: "Cajun Salmon and Asparagus",
+                protein: "Salmon",
+                description: "Salmon rubbed with Cajun spices and baked alongside asparagus spears. Simple one-pan meal with bold flavors and no heavy sauces.",
+                ingredients: [
+                    "2 salmon fillets (6 oz each)",
+                    "1 bunch asparagus, trimmed",
+                    "2 tsp Cajun seasoning",
+                    "2 tbsp olive oil",
+                    "Lemon wedges for serving",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Preheat oven to 400°F. Line a baking sheet with parchment paper.",
+                    "Toss asparagus with 1 tbsp olive oil, salt, and pepper. Arrange on one side of the pan.",
+                    "Brush salmon with remaining olive oil and rub with Cajun seasoning.",
+                    "Place salmon on the other side of the pan.",
+                    "Bake for 12-15 minutes until salmon is cooked and asparagus is tender.",
+                    "Serve with lemon wedges."
+                ]
+            },
+            {
+                name: "Mongolian Beef",
+                protein: "Beef",
+                description: "Tender beef in a savory-sweet sauce made with garlic, ginger, and green onions. Serve over steamed vegetables or rice for a lighter version of the takeout classic.",
+                ingredients: [
+                    "1 lb flank steak, thinly sliced",
+                    "4 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "3 tbsp low-sodium soy sauce",
+                    "2 tbsp hoisin sauce",
+                    "1 tbsp brown sugar",
+                    "1 bunch green onions, cut into 2-inch pieces",
+                    "1 tbsp sesame oil",
+                    "Steamed broccoli or rice for serving"
+                ],
+                steps: [
+                    "Heat sesame oil in a wok over high heat.",
+                    "Add beef in batches, cooking 2-3 minutes until browned. Remove and set aside.",
+                    "Add garlic and ginger, cooking 30 seconds.",
+                    "Mix soy sauce, hoisin sauce, and brown sugar. Pour into the wok.",
+                    "Return beef to the wok with green onions. Toss for 2 minutes until coated.",
+                    "Serve over steamed broccoli or rice."
+                ]
+            },
+            {
+                name: "Chicken Kebabs with Tzatziki",
+                protein: "Chicken",
+                description: "Grilled chicken kebabs with peppers and onions, served with a light yogurt-based tzatziki sauce and a side of tabbouleh salad.",
+                ingredients: [
+                    "1.5 lbs chicken breast, cubed",
+                    "1 bell pepper, cut into chunks",
+                    "1 red onion, cut into chunks",
+                    "1 cup Greek yogurt",
+                    "1/2 cucumber, grated and drained",
+                    "2 cloves garlic, minced",
+                    "1 tbsp lemon juice",
+                    "1 tbsp fresh dill",
+                    "1 cup bulgur wheat",
+                    "1 cup parsley, chopped",
+                    "1/2 cup tomatoes, diced"
+                ],
+                steps: [
+                    "Thread chicken, peppers, and onions onto skewers. Season with salt, pepper, and olive oil.",
+                    "Make tzatziki: mix yogurt, cucumber, garlic, lemon juice, and dill. Refrigerate.",
+                    "Cook bulgur according to package directions. Mix with parsley, tomatoes, lemon juice, and olive oil for tabbouleh.",
+                    "Grill kebabs over medium-high heat for 10-12 minutes, turning occasionally.",
+                    "Serve kebabs with tzatziki and tabbouleh on the side."
+                ]
+            },
+            {
+                name: "Pasta Puttanesca with Grilled Chicken",
+                protein: "Protein Pasta",
+                description: "Protein pasta with tomatoes, olives, capers, and garlic for a briny, flavorful sauce. Add grilled chicken breast for extra protein.",
+                ingredients: [
+                    "12 oz protein pasta",
+                    "2 chicken breasts",
+                    "28 oz can diced tomatoes",
+                    "1/2 cup Kalamata olives, pitted and halved",
+                    "3 tbsp capers",
+                    "4 cloves garlic, minced",
+                    "1/4 tsp red pepper flakes",
+                    "2 tbsp olive oil",
+                    "Fresh parsley for garnish"
+                ],
+                steps: [
+                    "Cook pasta according to package directions.",
+                    "Season chicken with salt and pepper. Grill or pan-sear 6-7 minutes per side. Slice.",
+                    "Heat olive oil in a large pan. Add garlic and red pepper flakes, cooking 1 minute.",
+                    "Add tomatoes, olives, and capers. Simmer 15 minutes until slightly thickened.",
+                    "Toss pasta with sauce.",
+                    "Top with sliced chicken and fresh parsley."
+                ]
+            },
+            {
+                name: "Grilled Pork Chops with Roasted Vegetables",
+                protein: "Pork",
+                description: "Juicy bone-in pork chops seasoned with herbs and grilled to perfection. Served with roasted bell peppers, zucchini, and onions.",
+                ingredients: [
+                    "2 bone-in pork chops (1 inch thick)",
+                    "2 tbsp olive oil",
+                    "2 tsp garlic powder",
+                    "1 tsp paprika",
+                    "1 tsp dried thyme",
+                    "2 bell peppers, cut into strips",
+                    "2 zucchini, sliced",
+                    "1 red onion, cut into wedges",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Preheat oven to 425°F.",
+                    "Mix 1 tbsp olive oil with garlic powder, paprika, thyme, salt, and pepper. Rub onto pork chops.",
+                    "Toss vegetables with remaining olive oil, salt, and pepper. Spread on a baking sheet.",
+                    "Roast vegetables for 25-30 minutes until tender and slightly caramelized.",
+                    "Heat grill or grill pan to medium-high. Grill pork chops 5-6 minutes per side until internal temperature reaches 145°F.",
+                    "Let pork rest 5 minutes, then serve with roasted vegetables."
+                ]
+            },
+            {
+                name: "Asian Pork Stir-Fry with Quinoa",
+                protein: "Pork",
+                description: "Tender pork tenderloin stir-fried with snap peas, carrots, and bok choy in a light ginger-soy sauce. Served over fluffy quinoa.",
+                ingredients: [
+                    "1 lb pork tenderloin, thinly sliced",
+                    "1 cup quinoa",
+                    "2 cups snap peas",
+                    "2 carrots, julienned",
+                    "2 heads baby bok choy, chopped",
+                    "3 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "3 tbsp low-sodium soy sauce",
+                    "1 tbsp rice vinegar",
+                    "1 tbsp sesame oil",
+                    "Sesame seeds for garnish"
+                ],
+                steps: [
+                    "Cook quinoa according to package directions.",
+                    "Heat sesame oil in a wok over high heat. Add pork and stir-fry 3-4 minutes until browned. Remove and set aside.",
+                    "Add garlic and ginger, cooking 30 seconds until fragrant.",
+                    "Add snap peas, carrots, and bok choy. Stir-fry 4-5 minutes.",
+                    "Return pork to wok. Add soy sauce and rice vinegar, tossing for 1-2 minutes.",
+                    "Serve over quinoa and garnish with sesame seeds."
+                ]
+            },
+            {
+                name: "Baked Pork Tenderloin with Sweet Potato and Brussels Sprouts",
+                protein: "Pork",
+                description: "Herb-crusted pork tenderloin roasted alongside sweet potatoes and Brussels sprouts for an easy one-pan dinner.",
+                ingredients: [
+                    "1 lb pork tenderloin",
+                    "2 sweet potatoes, cubed",
+                    "1 lb Brussels sprouts, halved",
+                    "3 tbsp olive oil",
+                    "2 tsp dried rosemary",
+                    "1 tsp garlic powder",
+                    "1 tsp paprika",
+                    "Salt and pepper to taste",
+                    "Fresh thyme for garnish"
+                ],
+                steps: [
+                    "Preheat oven to 400°F. Line a large sheet pan with parchment paper.",
+                    "Mix rosemary, garlic powder, paprika, salt, and pepper. Rub 1 tbsp olive oil and seasoning mix onto pork tenderloin.",
+                    "Toss sweet potatoes and Brussels sprouts with remaining olive oil, salt, and pepper.",
+                    "Place pork in center of sheet pan, arrange vegetables around it.",
+                    "Roast for 25-30 minutes until pork reaches 145°F and vegetables are tender.",
+                    "Let pork rest 5 minutes, slice, and serve with vegetables. Garnish with fresh thyme."
+                ]
+            },
+            {
+                name: "Pork and Vegetable Fried Rice",
+                protein: "Pork",
+                description: "Classic fried rice with diced pork, scrambled eggs, peas, carrots, and green onions. A quick weeknight favorite.",
+                ingredients: [
+                    "2 cups cooked rice (day-old works best)",
+                    "12 oz pork tenderloin, diced",
+                    "2 eggs, beaten",
+                    "1 cup frozen peas and carrots",
+                    "4 green onions, sliced",
+                    "3 cloves garlic, minced",
+                    "3 tbsp low-sodium soy sauce",
+                    "1 tbsp sesame oil",
+                    "1 tsp grated ginger"
+                ],
+                steps: [
+                    "Heat 1 tsp sesame oil in a large wok or skillet over high heat.",
+                    "Add beaten eggs and scramble quickly. Remove and set aside.",
+                    "Add pork to wok and cook 4-5 minutes until browned and cooked through. Remove and set aside.",
+                    "Add remaining sesame oil, garlic, and ginger. Cook 30 seconds.",
+                    "Add peas, carrots, and rice. Stir-fry 3-4 minutes, breaking up any rice clumps.",
+                    "Return pork and eggs to wok. Add soy sauce and green onions. Toss for 1-2 minutes and serve."
+                ]
+            },
+            {
+                name: "Mediterranean Pork Skewers with Quinoa Salad",
+                protein: "Pork",
+                description: "Marinated pork cubes grilled on skewers, served with a refreshing quinoa salad loaded with cucumbers, tomatoes, and feta.",
+                ingredients: [
+                    "1.5 lbs pork tenderloin, cut into cubes",
+                    "3 tbsp olive oil",
+                    "Juice of 1 lemon",
+                    "2 tsp dried oregano",
+                    "3 cloves garlic, minced",
+                    "1 cup quinoa",
+                    "1 cucumber, diced",
+                    "1 cup cherry tomatoes, halved",
+                    "1/4 cup red onion, finely diced",
+                    "1/4 cup feta cheese, crumbled",
+                    "2 tbsp fresh parsley, chopped"
+                ],
+                steps: [
+                    "Mix 2 tbsp olive oil, lemon juice, oregano, and garlic. Add pork and marinate 1-2 hours.",
+                    "Cook quinoa according to package directions. Let cool.",
+                    "Thread pork onto skewers. Grill over medium-high heat 10-12 minutes, turning occasionally.",
+                    "Mix cooled quinoa with cucumber, tomatoes, onion, remaining olive oil, and lemon juice.",
+                    "Top quinoa salad with feta and parsley.",
+                    "Serve pork skewers alongside quinoa salad."
+                ]
+            },
+            {
+                name: "Honey Mustard Pork with Green Beans and Rice",
+                protein: "Pork",
+                description: "Pan-seared pork chops glazed with honey mustard sauce, served with steamed green beans and fluffy white rice.",
+                ingredients: [
+                    "2 boneless pork chops",
+                    "2 tbsp Dijon mustard",
+                    "2 tbsp honey",
+                    "1 tbsp apple cider vinegar",
+                    "1 cup white or brown rice",
+                    "3 cups green beans, trimmed",
+                    "2 tbsp olive oil",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Cook rice according to package directions.",
+                    "Mix mustard, honey, and vinegar for the glaze.",
+                    "Season pork chops with salt and pepper. Heat olive oil in a skillet over medium-high.",
+                    "Sear pork chops 4-5 minutes per side. In the last minute, brush with honey mustard glaze.",
+                    "Steam green beans for 5-6 minutes until tender-crisp.",
+                    "Serve pork chops with rice and green beans, drizzling any remaining glaze over the pork."
+                ]
+            },
+            {
+                name: "Cilantro-Lime Chicken with Black Bean Quinoa",
+                protein: "Chicken",
+                description: "Grilled chicken marinated in cilantro and lime, served over quinoa mixed with black beans, corn, and peppers.",
+                ingredients: [
+                    "2 chicken breasts",
+                    "1/4 cup fresh cilantro, chopped",
+                    "Juice of 2 limes",
+                    "2 cloves garlic, minced",
+                    "1 cup quinoa",
+                    "1 can black beans, drained and rinsed",
+                    "1 cup corn kernels",
+                    "1 red bell pepper, diced",
+                    "2 tbsp olive oil",
+                    "1 tsp cumin"
+                ],
+                steps: [
+                    "Mix cilantro, juice of 1 lime, garlic, and 1 tbsp olive oil. Marinate chicken for 30 minutes.",
+                    "Cook quinoa according to package directions.",
+                    "Grill chicken over medium-high heat 6-7 minutes per side. Let rest, then slice.",
+                    "Mix cooked quinoa with black beans, corn, bell pepper, remaining lime juice, remaining olive oil, cumin, salt, and pepper.",
+                    "Serve sliced chicken over black bean quinoa.",
+                    "Garnish with extra cilantro and lime wedges."
+                ]
+            },
+            {
+                name: "Teriyaki Beef and Broccoli Rice Bowl",
+                protein: "Beef",
+                description: "Savory beef strips and broccoli in teriyaki sauce served over steamed jasmine rice for a satisfying bowl.",
+                ingredients: [
+                    "1 lb flank steak, thinly sliced",
+                    "4 cups broccoli florets",
+                    "1.5 cups jasmine rice",
+                    "4 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "1/4 cup low-sodium soy sauce",
+                    "2 tbsp honey",
+                    "1 tbsp rice vinegar",
+                    "1 tbsp sesame oil",
+                    "Sesame seeds and green onions for garnish"
+                ],
+                steps: [
+                    "Cook rice according to package directions.",
+                    "Mix soy sauce, honey, rice vinegar, garlic, and ginger for the teriyaki sauce.",
+                    "Heat sesame oil in a wok over high heat. Add beef and stir-fry 3-4 minutes until browned. Remove and set aside.",
+                    "Add broccoli and 2 tbsp water to wok. Cover and steam for 3-4 minutes.",
+                    "Return beef to wok with teriyaki sauce. Toss for 1-2 minutes until everything is coated.",
+                    "Serve over rice, garnished with sesame seeds and green onions."
+                ]
+            },
+            {
+                name: "Sheet Pan Garlic Shrimp and Vegetables",
+                protein: "Shrimp",
+                description: "Your favorite! Succulent shrimp with garlic, roasted alongside bell peppers, zucchini, and cherry tomatoes for an easy, healthy dinner.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "6 cloves garlic, minced",
+                    "2 bell peppers (any color), cut into chunks",
+                    "2 zucchini, sliced into rounds",
+                    "2 cups cherry tomatoes",
+                    "3 tbsp olive oil",
+                    "1 tsp paprika",
+                    "1/2 tsp red pepper flakes (optional)",
+                    "Juice of 1 lemon",
+                    "Fresh parsley for garnish",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Preheat oven to 425°F. Line a large sheet pan with parchment paper.",
+                    "In a large bowl, toss bell peppers, zucchini, and cherry tomatoes with 2 tbsp olive oil, salt, and pepper.",
+                    "Spread vegetables on the sheet pan and roast for 10 minutes.",
+                    "Meanwhile, toss shrimp with remaining olive oil, minced garlic, paprika, red pepper flakes, salt, and pepper.",
+                    "Remove pan from oven, push vegetables to the sides, and add shrimp to the center.",
+                    "Return to oven and roast 8-10 minutes until shrimp are pink and cooked through.",
+                    "Squeeze fresh lemon juice over everything and garnish with parsley before serving."
+                ]
+            },
+            {
+                name: "Shrimp Stir-Fry with Snap Peas and Rice",
+                protein: "Shrimp",
+                description: "Quick and flavorful shrimp stir-fried with crisp snap peas, carrots, and ginger over jasmine rice.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "1.5 cups jasmine rice",
+                    "2 cups snap peas",
+                    "1 red bell pepper, sliced",
+                    "2 carrots, julienned",
+                    "4 cloves garlic, minced",
+                    "1 tbsp fresh ginger, grated",
+                    "3 tbsp low-sodium soy sauce",
+                    "1 tbsp honey",
+                    "1 tbsp sesame oil",
+                    "Green onions for garnish"
+                ],
+                steps: [
+                    "Cook rice according to package directions.",
+                    "Heat sesame oil in a wok over high heat. Add shrimp and cook 2-3 minutes per side until pink. Remove and set aside.",
+                    "Add garlic and ginger to wok, cooking 30 seconds until fragrant.",
+                    "Add snap peas, bell pepper, and carrots. Stir-fry 4-5 minutes until crisp-tender.",
+                    "Return shrimp to wok. Add soy sauce and honey, tossing for 1 minute.",
+                    "Serve over rice and garnish with sliced green onions."
+                ]
+            },
+            {
+                name: "Cilantro-Lime Shrimp with Quinoa and Black Beans",
+                protein: "Shrimp",
+                description: "Fresh and zesty shrimp marinated in cilantro and lime, served over quinoa mixed with black beans and corn.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "1/4 cup fresh cilantro, chopped",
+                    "Juice of 2 limes",
+                    "3 cloves garlic, minced",
+                    "1 cup quinoa",
+                    "1 can black beans, drained and rinsed",
+                    "1 cup corn kernels",
+                    "1 red bell pepper, diced",
+                    "2 tbsp olive oil",
+                    "1 tsp cumin",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Mix cilantro, juice of 1 lime, 2 cloves minced garlic, and 1 tbsp olive oil. Toss with shrimp and marinate 15-30 minutes.",
+                    "Cook quinoa according to package directions.",
+                    "Heat remaining olive oil in a skillet over medium-high. Cook shrimp 2-3 minutes per side until pink and cooked through.",
+                    "Mix cooked quinoa with black beans, corn, bell pepper, remaining lime juice, cumin, salt, and pepper.",
+                    "Serve shrimp over quinoa mixture and garnish with extra cilantro and lime wedges."
+                ]
+            },
+            {
+                name: "Cajun Shrimp and Vegetable Skewers",
+                protein: "Shrimp",
+                description: "Spiced shrimp grilled on skewers with bell peppers, onions, and zucchini. Simple, smoky, and delicious.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "2 tsp Cajun seasoning",
+                    "2 bell peppers, cut into chunks",
+                    "1 red onion, cut into wedges",
+                    "1 zucchini, sliced into thick rounds",
+                    "2 tbsp olive oil",
+                    "Lemon wedges for serving",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "If using wooden skewers, soak them in water for 30 minutes.",
+                    "Toss shrimp with 1 tbsp olive oil and Cajun seasoning.",
+                    "Toss vegetables with remaining olive oil, salt, and pepper.",
+                    "Thread shrimp and vegetables alternately onto skewers.",
+                    "Heat grill or grill pan to medium-high. Grill skewers 3-4 minutes per side until shrimp are pink and vegetables are slightly charred.",
+                    "Serve with lemon wedges and your choice of rice or quinoa on the side."
+                ]
+            },
+            {
+                name: "Shrimp and Asparagus with Lemon-Garlic Sauce",
+                protein: "Shrimp",
+                description: "Pan-seared shrimp and tender asparagus in a light lemon-garlic sauce. Elegant and ready in 15 minutes.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "1 lb asparagus, trimmed and cut into 2-inch pieces",
+                    "5 cloves garlic, minced",
+                    "Juice of 1 lemon",
+                    "1/4 cup chicken or vegetable broth",
+                    "2 tbsp olive oil",
+                    "Fresh parsley for garnish",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Heat 1 tbsp olive oil in a large skillet over medium-high heat.",
+                    "Add asparagus and sauté 4-5 minutes until tender-crisp. Remove and set aside.",
+                    "Add remaining olive oil and garlic to the skillet. Cook 30 seconds until fragrant.",
+                    "Add shrimp and cook 2-3 minutes per side until pink.",
+                    "Return asparagus to skillet. Add lemon juice and broth. Cook 1-2 minutes until sauce reduces slightly.",
+                    "Season with salt and pepper, garnish with parsley, and serve over rice or quinoa."
+                ]
+            },
+            {
+                name: "Mediterranean Shrimp Bowl with Quinoa",
+                protein: "Shrimp",
+                description: "Seasoned shrimp over quinoa with cucumbers, tomatoes, olives, and a tangy lemon dressing.",
+                ingredients: [
+                    "1 lb large shrimp, peeled and deveined",
+                    "1 cup quinoa",
+                    "2 tsp dried oregano",
+                    "1 cucumber, diced",
+                    "1 cup cherry tomatoes, halved",
+                    "1/2 cup Kalamata olives, halved",
+                    "1/4 cup red onion, finely diced",
+                    "1/4 cup feta cheese, crumbled",
+                    "3 tbsp olive oil",
+                    "Juice of 1 lemon",
+                    "Salt and pepper to taste"
+                ],
+                steps: [
+                    "Cook quinoa according to package directions. Let cool slightly.",
+                    "Season shrimp with oregano, salt, and pepper.",
+                    "Heat 1 tbsp olive oil in a skillet over medium-high. Cook shrimp 2-3 minutes per side until pink.",
+                    "Mix quinoa with cucumber, tomatoes, olives, and onion.",
+                    "Dress quinoa mixture with remaining olive oil and lemon juice.",
+                    "Top quinoa bowls with cooked shrimp and crumbled feta."
+                ]
+            }
+        ];
+
+        let currentMeal = null;
+        let filteredMeals = [];
+        let isSearchActive = false;
+        
+        function searchRecipes() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            filteredMeals = meals.filter(meal => {
+                return meal.name.toLowerCase().includes(searchTerm) ||
+                       meal.description.toLowerCase().includes(searchTerm) ||
+                       meal.protein.toLowerCase().includes(searchTerm) ||
+                       meal.ingredients.some(ing => ing.toLowerCase().includes(searchTerm));
+            });
+            
+            isSearchActive = true;
+            
+            const resultsDiv = document.getElementById('searchResults');
+            if (filteredMeals.length === 0) {
+                resultsDiv.innerHTML = `No recipes found for "${searchTerm}". Try another search term.`;
+                document.getElementById('suggestionBox').innerHTML = `
+                    <div class="meal-name">No Results Found</div>
+                    <div class="meal-description">Try searching for: salmon, chicken, beef, pork, shrimp, pasta, quinoa, rice, grilled, stir-fry, etc.</div>
+                `;
+                document.getElementById('updateButton').style.display = 'none';
+            } else {
+                resultsDiv.innerHTML = `Found ${filteredMeals.length} recipe${filteredMeals.length === 1 ? '' : 's'} matching "${searchTerm}". Click "Get Recipe" to see a random match!`;
+                document.getElementById('suggestionBox').innerHTML = `
+                    <div class="meal-name">Search Results Ready!</div>
+                    <div class="meal-description">Found ${filteredMeals.length} recipe${filteredMeals.length === 1 ? '' : 's'} matching "${searchTerm}". Click the button below to see a random recipe from your search results.</div>
+                `;
+                document.getElementById('updateButton').style.display = 'none';
+            }
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            isSearchActive = false;
+            filteredMeals = [];
+            currentMeal = null;
+            document.getElementById('suggestionBox').innerHTML = `
+                <div class="meal-name">Click below to get a complete recipe!</div>
+                <div class="meal-description">Each suggestion includes ingredients and step-by-step cooking instructions featuring chicken, beef, salmon, pork, shrimp, protein pasta, and vegetables - with plenty of rice and quinoa options.</div>
+            `;
+            document.getElementById('updateButton').style.display = 'none';
+        }
+        
+        function scaleIngredient(ingredient, servings) {
+            // Base recipes are for 2 people
+            const baseServings = 2;
+            const multiplier = servings / baseServings;
+            
+            // Try to extract number at the start of the ingredient
+            const fractionMatch = ingredient.match(/^(\d+)\/(\d+)/);
+            const decimalMatch = ingredient.match(/^(\d+\.?\d*)/);
+            
+            if (fractionMatch) {
+                // Handle fractions like "1/4 cup"
+                const numerator = parseInt(fractionMatch[1]);
+                const denominator = parseInt(fractionMatch[2]);
+                const originalValue = numerator / denominator;
+                const scaledValue = originalValue * multiplier;
+                
+                // Convert back to fraction if it makes sense
+                const scaledFraction = convertToFraction(scaledValue);
+                return ingredient.replace(/^\d+\/\d+/, scaledFraction);
+            } else if (decimalMatch) {
+                // Handle whole numbers or decimals like "2 chicken breasts" or "1.5 lbs"
+                const originalValue = parseFloat(decimalMatch[1]);
+                const scaledValue = originalValue * multiplier;
+                
+                // Round to reasonable precision
+                let displayValue;
+                if (scaledValue < 1) {
+                    displayValue = convertToFraction(scaledValue);
+                } else if (scaledValue % 1 === 0) {
+                    displayValue = Math.round(scaledValue);
+                } else {
+                    displayValue = scaledValue.toFixed(1);
+                }
+                
+                return ingredient.replace(/^\d+\.?\d*/, displayValue);
+            }
+            
+            // If no number found, return as-is (like "Salt and pepper to taste")
+            return ingredient;
+        }
+        
+        function convertToFraction(decimal) {
+            // Convert decimal to common fractions
+            if (Math.abs(decimal - 0.125) < 0.01) return "1/8";
+            if (Math.abs(decimal - 0.25) < 0.01) return "1/4";
+            if (Math.abs(decimal - 0.33) < 0.01) return "1/3";
+            if (Math.abs(decimal - 0.5) < 0.01) return "1/2";
+            if (Math.abs(decimal - 0.67) < 0.01) return "2/3";
+            if (Math.abs(decimal - 0.75) < 0.01) return "3/4";
+            
+            // For other values, return as decimal
+            return decimal.toFixed(2);
+        }
+        
+        function displayMeal(meal, servings) {
+            // Scale ingredients based on servings
+            const scaledIngredients = meal.ingredients.map(item => scaleIngredient(item, servings));
+            const ingredientsList = scaledIngredients.map(item => `<li>${item}</li>`).join('');
+            const stepsList = meal.steps.map((step, index) => `<li><strong>Step ${index + 1}:</strong> ${step}</li>`).join('');
+            
+            // Set protein tag color based on type
+            let proteinColor = '#667eea'; // default
+            if (meal.protein === 'Salmon') proteinColor = '#f97316';
+            if (meal.protein === 'Beef') proteinColor = '#dc2626';
+            if (meal.protein === 'Pork') proteinColor = '#ec4899';
+            if (meal.protein === 'Shrimp') proteinColor = '#06b6d4';
+            if (meal.protein === 'Protein Pasta') proteinColor = '#8b5cf6';
+            
+            const suggestionBox = document.getElementById('suggestionBox');
+            suggestionBox.innerHTML = `
+                <span class="protein-tag" style="background: ${proteinColor};">${meal.protein}</span>
+                <div class="meal-name">${meal.name}</div>
+                <div class="meal-description">${meal.description}</div>
+                <div style="margin-top: 15px; color: #667eea; font-weight: bold;">Serves: ${servings} ${servings === 1 ? 'person' : 'people'}</div>
+                
+                <div style="margin-top: 25px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.3em;">Ingredients:</h3>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #555;">
+                        ${ingredientsList}
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 25px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.3em;">Cooking Instructions:</h3>
+                    <ol style="margin-left: 20px; line-height: 1.8; color: #555;">
+                        ${stepsList}
+                    </ol>
+                </div>
+            `;
+            
+            // Show the update servings button
+            document.getElementById('updateButton').style.display = 'block';
+        }
+
+        function getSuggestion() {
+            const mealsToUse = isSearchActive && filteredMeals.length > 0 ? filteredMeals : meals;
+            
+            if (mealsToUse.length === 0) {
+                alert('No recipes available. Please clear your search or try a different search term.');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * mealsToUse.length);
+            currentMeal = mealsToUse[randomIndex];
+            const servings = parseInt(document.getElementById('servings').value);
+            displayMeal(currentMeal, servings);
+        }
+        
+        function updateServings() {
+            if (currentMeal) {
+                const servings = parseInt(document.getElementById('servings').value);
+                displayMeal(currentMeal, servings);
+            }
+        }
+    </script>
+</body>
+</html>
